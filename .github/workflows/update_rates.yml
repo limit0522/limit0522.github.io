@@ -1,43 +1,21 @@
-name: Update Exchange Rates and Deploy
+name: Deploy Legal Pages
 
 on:
   push:
     branches:
-      - main
-  schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+      - main  # 只要你修改了 main 分支的文件，就自动更新到域名下
+  workflow_dispatch: # 允许你手动点击运行
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Set up Python 🐍
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies 📦
-        run: |
-          pip install requests
-          # 如果有其他库，在这里继续 pip install
-
-      - name: Run Update Script ⚙️
-        run: |
-          # 确保这里的文件名和你仓库里的一致
-          python main.py 
 
       - name: Deploy to GitHub Pages 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .               
-          branch: gh-pages        
-          # 【核心配置】clean: false 会保护分支中已存在的 CNAME, privacy.html, terms.html
-          clean: false            
-          target-folder: .
-          commit-message: "Update data and sync legal docs (privacy & terms)"
+          folder: .               # 将仓库根目录所有文件发布
+          branch: gh-pages        # 发布到 gh-pages 分支
+          clean: false            # 保护已有的文件

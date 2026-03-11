@@ -1,20 +1,45 @@
-name: Hourly Update
+name: Update Exchange Rates and Deploy
+
 on:
+  push:
+    branches:
+      - main  # 当你修改代码或 privacy.html 时触发
   schedule:
-    - cron: '5 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *'  # 每小时自动运行一次更新汇率
+  workflow_dispatch:      # 允许你手动点击按钮触发
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Run
-        run: |
-          pip install requests
-          python scripts/fetch_rates.py
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      # 1. 拉取代码
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./api_data
-          publish_branch: gh-pages
+          persist-credentials: false
+
+      # 2. 设置环境 (以 Python 为例，如果是 Node.js 请更换)
+      - name: Set up Python 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      # 3. 安装依赖 (如果有 requirements.txt)
+      - name: Install dependencies 📦
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # 4. 运行你的汇率脚本
+      # 请确保你的脚本生成的文件名为 exchange_rates.json (或者修改下方代码)
+      - name: Run Update Script ⚙️
+        run: python your_script_name.py 
+
+      # 5. 部署到 GitHub Pages 分支 (核心步骤)
+      - name: Deploy to GitHub Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .               # 部署当前目录下所有文件
+          branch: gh-pages        # 部署到 gh-pages 分支
+          clean: false            # 【关键】设为 false，防止删除已有的 privacy.html
+          target-folder: .        # 确保放在根目录
+          commit-message: "Update rates and sync privacy policy"
